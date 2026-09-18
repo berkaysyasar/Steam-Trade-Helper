@@ -12,7 +12,7 @@ No automated posting.*
 ## İndir
 
 [**Releases**](https://github.com/berkaysyasar/Steam-Trade-Helper/releases/latest)
-sayfasından `Trade Ilan Yardimcisi.zip` dosyasını indir, bir klasöre çıkar ve
+sayfasından `Trade.Ilan.Yardimcisi.zip` dosyasını indir, bir klasöre çıkar ve
 `Trade Ilan Yardimcisi.exe` dosyasına çift tıkla. Kurulum yok.
 
 Windows SmartScreen ilk açılışta uyarı gösterebilir (program imzasız):

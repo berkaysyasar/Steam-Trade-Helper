@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade İlan Yardımcısı</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --panel2:#1c2a3a; --line:#26384c;
+    --txt:#e6edf3; --muted:#8aa0b5; --accent:#4c9aff; --accent2:#2f7d32;
+    --danger:#c0392b; --chip:#22303f;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);}
+  header{padding:14px 22px;background:linear-gradient(90deg,#132030,#1b2c40);border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  header .titles h1{margin:0;font-size:19px;}
+  header .titles p{margin:4px 0 0;color:var(--muted);font-size:12.5px;max-width:640px;}
+  .topctrl{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+  .btnrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .profchip{font-size:12px;background:var(--chip);border:1px solid var(--line);padding:6px 10px;border-radius:20px;color:var(--muted);}
+  .profchip b{color:var(--txt);}
+  select.lang{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 8px;font-size:12.5px;align-self:stretch;}
+  .appbar{max-width:1200px;margin:0 auto;padding:18px 20px 0;display:flex;}
+  .wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px;max-width:1200px;margin:0 auto;align-items:start;}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr;}}
+  .col{display:flex;flex-direction:column;gap:18px;min-width:0;}
+  .star{background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;color:#5b6b7d;}
+  .star.on{color:#f0b400;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;}
+  .card h2{margin:0 0 12px;font-size:15px;color:var(--accent);letter-spacing:.3px;}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
+  input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:9px 10px;font-size:13px;font-family:inherit;outline:none;}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+  textarea{min-height:120px;resize:vertical;line-height:1.5;}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:9px 14px;
+    font-size:13px;font-weight:600;cursor:pointer;color:#fff;background:var(--accent);}
+  .btn:hover{filter:brightness(1.1)} .btn:disabled{opacity:.55;cursor:default;filter:none;}
+  .btn.green{background:var(--accent2)} .btn.ghost{background:var(--chip);color:var(--txt);}
+  .btn.danger{background:var(--danger)} .btn.sm{padding:6px 10px;font-size:12px;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto;}
+  .item{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;}
+  .item.dashed{border-style:dashed;background:var(--panel);}
+  .item.recent{border-color:#c0563f;background:#2b1e1c;box-shadow:0 0 0 1px rgba(192,86,63,.35) inset;}
+  .item .top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .item .name{font-weight:600;font-size:13px;}
+  .item .url{color:var(--muted);font-size:11px;word-break:break-all;margin-top:2px;}
+  .pill{font-size:11px;background:var(--chip);border:1px solid var(--line);padding:3px 8px;border-radius:20px;color:var(--muted);white-space:nowrap;}
+  .tplbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f8f3a;color:#fff;
+    padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:80%;}
+  .toast.show{opacity:1;} .toast.err{background:#b5372b;}
+  .note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  .empty{color:var(--muted);font-size:12px;padding:8px 2px;}
+  code{background:#0c141d;padding:1px 5px;border-radius:4px;font-size:12px;}
+  .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;
+    display:inline-block;animation:sp .7s linear infinite;} @keyframes sp{to{transform:rotate(360deg)}}
+  /* profil secim ekrani */
+  .pwrap{max-width:640px;margin:40px auto;padding:0 20px;}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;}
+  .pcard h2{margin:0 0 6px;font-size:18px;}
+  .pcard .sub{color:var(--muted);font-size:13px;margin:0 0 18px;line-height:1.5;}
+  .plist{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .prow:hover{border-color:var(--accent);}
+  .prow.sel{border-color:var(--danger);background:#2a1c22;}
+  .prow .pinfo{min-width:0}
+  .prow .pname{font-weight:600;font-size:14px;}
+  .prow .pname.editable{display:inline-block;}
+  .prow .pname.editable:hover{text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;}
+  .prow .pmeta{color:var(--muted);font-size:11.5px;margin-top:2px;word-break:break-all;}
+  .pcheck{width:18px;height:18px;border:2px solid var(--line);border-radius:5px;display:inline-flex;
+    align-items:center;justify-content:center;color:#fff;font-size:12px;flex:0 0 auto;}
+  .prow.sel .pcheck{background:var(--danger);border-color:var(--danger);}
+  /* modal */
+  .modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:200;}
+  .modalBox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;width:360px;max-width:90%;}
+  .modalBox .modalMsg{font-size:13px;color:var(--txt);margin-bottom:10px;}
+  /* sol menu (drawer) */
+  .hleft{display:flex;align-items:center;gap:12px;min-width:0;}
+  .hamb{background:var(--chip);border:1px solid var(--line);color:var(--txt);border-radius:8px;
+    width:38px;height:38px;font-size:18px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .hamb:hover{border-color:var(--accent);}
+  .drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;visibility:hidden;transition:.2s;z-index:150;}
+  .drawerOverlay.open{opacity:1;visibility:visible;}
+  .drawer{position:fixed;top:0;left:0;height:100%;width:290px;max-width:82%;background:var(--panel);
+    border-right:1px solid var(--line);transform:translateX(-100%);transition:transform .22s ease;z-index:151;
+    display:flex;flex-direction:column;box-shadow:6px 0 24px rgba(0,0,0,.35);}
+  .drawer.open{transform:translateX(0);}
+  .drawerHead{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;
+    font-size:15px;font-weight:600;border-bottom:1px solid var(--line);}
+  .dclose{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;}
+  .drawerList{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
+  .ditem{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;transition:.15s;}
+  .ditem:hover{border-color:var(--accent);}
+  .ditem.active{border-color:var(--accent);background:#1d3350;}
+  .ditem .dn{font-weight:600;font-size:13px;}
+  .ditem .dm{color:var(--muted);font-size:11px;margin-top:2px;word-break:break-all;}
+  .drawerFoot{padding:12px;border-top:1px solid var(--line);}
+</style>
+</head>
+<body>
+<header>
+  <div class="titles">
+    <h1 data-i18n="appTitle">🎮 Trade İlan Yardımcısı</h1>
+    <p data-i18n="subtitle"></p>
+  </div>
+  <div class="topctrl">
+    <div class="btnrow">
+      <span class="profchip" id="profChip" style="display:none"></span>
+      <button class="btn danger sm" id="btnReset" style="display:none" onclick="resetPage()" data-i18n="resetPage"></button>
+    </div>
+    <select class="lang" id="langSel" onchange="setLang(this.value)">
+      <option value="tr">Türkçe</option>
+      <option value="en">English</option>
+      <option value="ru">Русский</option>
+      <option value="zh">中文</option>
+      <option value="es">Español</option>
+      <option value="de">Deutsch</option>
+      <option value="fr">Français</option>
+    </select>
+  </div>
+</header>
+
+<!-- PROFIL SECIM EKRANI -->
+<div id="profileView" style="display:none">
+  <div class="pwrap">
+    <div class="pcard">
+      <h2 data-i18n="profilesTitle"></h2>
+      <p class="sub" data-i18n="profilesHint"></p>
+      <div class="plist" id="profileList"></div>
+      <div class="row" id="profileActions" style="margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ANA UYGULAMA -->
+<div id="appView" style="display:none">
+  <div class="appbar">
+    <button class="btn ghost sm" onclick="goProfiles()" data-i18n="profilesBtn"></button>
+    <button class="btn sm" style="margin-left:auto" onclick="openAllGroups()" data-i18n="openAll"></button>
+  </div>
+  <div class="wrap">
+    <div class="col">
+    <!-- SABLON -->
+    <section class="card">
+      <h2 data-i18n="tplTitle"></h2>
+      <div class="tplbar">
+        <select id="tplSelect" style="flex:1"></select>
+        <button class="btn ghost sm" onclick="newTpl()" data-i18n="newBtn"></button>
+        <button class="btn danger sm" onclick="delTpl()" data-i18n="deleteBtn"></button>
+      </div>
+      <label data-i18n="tplNameLabel"></label>
+      <input id="tplName">
+      <label data-i18n="tplBodyLabel"></label>
+      <textarea id="tplBody"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn green" onclick="saveTpl()" data-i18n="save"></button>
+        <button class="btn" onclick="copyActive()" data-i18n="copyClipboard"></button>
+      </div>
+      <div class="note" data-i18n="tplStored"></div>
+    </section>
+
+    <!-- FAVORILER -->
+    <section class="card">
+      <h2 data-i18n="favTitle"></h2>
+      <div class="list" id="favList" style="max-height:38vh"></div>
+    </section>
+    </div><!-- /col -->
+
+    <!-- GRUPLAR -->
+    <section class="card">
+      <h2 data-i18n="groupsTitle"></h2>
+      <div class="item dashed" style="margin-bottom:14px">
+        <div class="name" style="color:var(--accent)" data-i18n="fetchTitle"></div>
+        <label data-i18n="profileInputLabel"></label>
+        <input id="profInput" placeholder="76561199413804452  •  Sinhon  •  https://steamcommunity.com/id/Sinhon">
+        <div class="row" style="margin-top:8px">
+          <button class="btn green sm" id="fetchBtn" onclick="fetchGroups()" data-i18n="fetchBtn"></button>
+        </div>
+        <div class="note" data-i18n="fetchHint"></div>
+      </div>
+      <label data-i18n="groupNameLabel"></label>
+      <input id="grpName">
+      <label data-i18n="groupUrlLabel"></label>
+      <input id="grpUrl" placeholder="https://steamcommunity.com/groups/...">
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm green" onclick="addGroup()" data-i18n="addManual"></button>
+      </div>
+      <div class="list" id="groupList"></div>
+      <div class="note" data-i18n="usage"></div>
+    </section>
+  </div>
+</div>
+
+<div class="modalOverlay" id="modal">
+  <div class="modalBox">
+    <div class="modalMsg" id="modalMsg"></div>
+    <input id="modalInput" autocomplete="off">
+    <div class="row" style="justify-content:flex-end;margin-top:14px">
+      <button class="btn ghost sm" id="modalCancel"></button>
+      <button class="btn green sm" id="modalOk"></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- ceviriler ---------------- */
+const I18N = {
+  appTitle:{tr:"🎮 Trade İlan Yardımcısı",en:"🎮 Trade Ad Helper",ru:"🎮 Помощник по объявлениям",zh:"🎮 交易广告助手",es:"🎮 Asistente de Anuncios",de:"🎮 Trade-Anzeigen-Helfer",fr:"🎮 Assistant d'Annonces"},
+  subtitle:{
+    tr:"İlanı kopyala, grubu aç, Ctrl+V + Enter ile sen paylaş. Otomatik postlama yok — son adım hep sende.",
+    en:"Copy the ad, open the group, share it yourself with Ctrl+V + Enter. No auto-posting — the final step is always yours.",
+    ru:"Скопируй объявление, открой группу и опубликуй сам через Ctrl+V + Enter. Без автопостинга — последний шаг всегда за тобой.",
+    zh:"复制广告，打开群组，用 Ctrl+V + Enter 自己发布。无自动发布——最后一步永远由你完成。",
+    es:"Copia el anuncio, abre el grupo y compártelo tú mismo con Ctrl+V + Enter. Sin publicación automática: el último paso siempre es tuyo.",
+    de:"Anzeige kopieren, Gruppe öffnen, mit Strg+V + Enter selbst posten. Kein Auto-Posting – der letzte Schritt liegt immer bei dir.",
+    fr:"Copie l'annonce, ouvre le groupe et publie-la toi-même avec Ctrl+V + Entrée. Pas de publication automatique — la dernière étape t'appartient."},
+  profilesTitle:{tr:"Profil Seç",en:"Select Profile",ru:"Выбор профиля",zh:"选择配置文件",es:"Seleccionar perfil",de:"Profil wählen",fr:"Choisir un profil"},
+  profilesHint:{
+    tr:"Bir profil seç ya da yeni oluştur. Her profilin kendi Steam hesabı, grupları ve ilanı vardır.",
+    en:"Pick a profile or create a new one. Each profile has its own Steam account, groups and ad.",
+    ru:"Выбери профиль или создай новый. У каждого профиля свой аккаунт Steam, группы и объявление.",
+    zh:"选择一个配置文件或新建一个。每个配置文件都有自己的 Steam 账户、群组和广告。",
+    es:"Elige un perfil o crea uno nuevo. Cada perfil tiene su propia cuenta de Steam, grupos y anuncio.",
+    de:"Wähle ein Profil oder erstelle ein neues. Jedes Profil hat sein eigenes Steam-Konto, Gruppen und Anzeige.",
+    fr:"Choisis un profil ou crées-en un nouveau. Chaque profil a son propre compte Steam, ses groupes et son annonce."},
+  newProfile:{tr:"+ Yeni Profil",en:"+ New Profile",ru:"+ Новый профиль",zh:"+ 新建配置文件",es:"+ Nuevo perfil",de:"+ Neues Profil",fr:"+ Nouveau profil"},
+  noProfiles:{tr:"Henüz profil yok. Yeni bir profil oluştur.",en:"No profiles yet. Create a new one.",ru:"Профилей пока нет. Создай новый.",zh:"还没有配置文件。新建一个。",es:"Aún no hay perfiles. Crea uno nuevo.",de:"Noch keine Profile. Erstelle eins.",fr:"Aucun profil. Crées-en un."},
+  profileDefault:{tr:"Profil",en:"Profile",ru:"Профиль",zh:"配置文件",es:"Perfil",de:"Profil",fr:"Profil"},
+  open:{tr:"Aç",en:"Open",ru:"Открыть",zh:"打开",es:"Abrir",de:"Öffnen",fr:"Ouvrir"},
+  profilesBtn:{tr:"◀ Profiller",en:"◀ Profiles",ru:"◀ Профили",zh:"◀ 配置文件",es:"◀ Perfiles",de:"◀ Profile",fr:"◀ Profils"},
+  resetPage:{tr:"Sayfayı Sıfırla",en:"Reset Page",ru:"Сбросить",zh:"重置页面",es:"Restablecer",de:"Zurücksetzen",fr:"Réinitialiser"},
+  tplTitle:{tr:"İlan Şablonu",en:"Ad Template",ru:"Шаблон объявления",zh:"广告模板",es:"Plantilla de anuncio",de:"Anzeigen-Vorlage",fr:"Modèle d'annonce"},
+  tplNameLabel:{tr:"Şablon adı",en:"Template name",ru:"Название шаблона",zh:"模板名称",es:"Nombre de plantilla",de:"Vorlagenname",fr:"Nom du modèle"},
+  tplBodyLabel:{tr:"İlan metni",en:"Ad text",ru:"Текст объявления",zh:"广告内容",es:"Texto del anuncio",de:"Anzeigentext",fr:"Texte de l'annonce"},
+  save:{tr:"💾 Kaydet",en:"💾 Save",ru:"💾 Сохранить",zh:"💾 保存",es:"💾 Guardar",de:"💾 Speichern",fr:"💾 Enregistrer"},
+  copyClipboard:{tr:"📋 Panoya Kopyala",en:"📋 Copy",ru:"📋 Копировать",zh:"📋 复制",es:"📋 Copiar",de:"📋 Kopieren",fr:"📋 Copier"},
+  newBtn:{tr:"+ Yeni",en:"+ New",ru:"+ Новый",zh:"+ 新建",es:"+ Nuevo",de:"+ Neu",fr:"+ Nouveau"},
+  deleteBtn:{tr:"Sil",en:"Delete",ru:"Удалить",zh:"删除",es:"Eliminar",de:"Löschen",fr:"Supprimer"},
+  tplStored:{tr:"İlan senin bilgisayarında saklanır, hiçbir yere gönderilmez.",en:"The ad is stored on your computer and sent nowhere.",ru:"Объявление хранится на твоём компьютере и никуда не отправляется.",zh:"广告保存在你的电脑上，不会发送到任何地方。",es:"El anuncio se guarda en tu ordenador y no se envía a ningún sitio.",de:"Die Anzeige wird auf deinem Computer gespeichert und nirgendwohin gesendet.",fr:"L'annonce est stockée sur ton ordinateur et n'est envoyée nulle part."},
+  groupsTitle:{tr:"Gruplar",en:"Groups",ru:"Группы",zh:"群组",es:"Grupos",de:"Gruppen",fr:"Groupes"},
+  fetchTitle:{tr:"📥 Steam profilinden çek",en:"📥 Fetch from Steam profile",ru:"📥 Загрузить из профиля Steam",zh:"📥 从 Steam 个人资料获取",es:"📥 Obtener del perfil de Steam",de:"📥 Aus Steam-Profil laden",fr:"📥 Récupérer depuis le profil Steam"},
+  profileInputLabel:{tr:"Profil adın veya linkin (vanity, SteamID64 ya da tam URL)",en:"Your profile name or link (vanity, SteamID64 or full URL)",ru:"Имя или ссылка профиля (vanity, SteamID64 или полный URL)",zh:"你的个人资料名称或链接（自定义URL、SteamID64 或完整网址）",es:"Tu nombre o enlace de perfil (vanity, SteamID64 o URL completa)",de:"Dein Profilname oder -link (Vanity, SteamID64 oder vollständige URL)",fr:"Ton nom ou lien de profil (vanity, SteamID64 ou URL complète)"},
+  fetchBtn:{tr:"⬇ Grupları Çek",en:"⬇ Fetch Groups",ru:"⬇ Загрузить группы",zh:"⬇ 获取群组",es:"⬇ Obtener grupos",de:"⬇ Gruppen laden",fr:"⬇ Récupérer les groupes"},
+  fetchHint:{tr:"Uygulama grup listeni Steam'den doğrudan çeker (giriş gerekmez, profil herkese açık olmalı).",en:"The app fetches your group list directly from Steam (no login needed, profile must be public).",ru:"Приложение загружает список групп напрямую из Steam (вход не нужен, профиль должен быть публичным).",zh:"应用直接从 Steam 获取你的群组列表（无需登录，个人资料须公开）。",es:"La app obtiene tu lista de grupos directamente de Steam (sin iniciar sesión, el perfil debe ser público).",de:"Die App lädt deine Gruppenliste direkt von Steam (kein Login nötig, Profil muss öffentlich sein).",fr:"L'app récupère ta liste de groupes directement depuis Steam (aucune connexion requise, le profil doit être public)."},
+  groupNameLabel:{tr:"Grup adı",en:"Group name",ru:"Название группы",zh:"群组名称",es:"Nombre del grupo",de:"Gruppenname",fr:"Nom du groupe"},
+  groupUrlLabel:{tr:"Grup linki",en:"Group link",ru:"Ссылка группы",zh:"群组链接",es:"Enlace del grupo",de:"Gruppenlink",fr:"Lien du groupe"},
+  addManual:{tr:"+ Elle Ekle",en:"+ Add manually",ru:"+ Добавить вручную",zh:"+ 手动添加",es:"+ Añadir manual",de:"+ Manuell",fr:"+ Ajouter manuel"},
+  copyOpen:{tr:"📋 Kopyala & Aç",en:"📋 Copy & Open",ru:"📋 Копир. и открыть",zh:"📋 复制并打开",es:"📋 Copiar y abrir",de:"📋 Kopieren & Öffnen",fr:"📋 Copier & Ouvrir"},
+  openOnly:{tr:"🔗 Sadece Aç",en:"🔗 Open only",ru:"🔗 Открыть",zh:"🔗 仅打开",es:"🔗 Solo abrir",de:"🔗 Nur öffnen",fr:"🔗 Ouvrir"},
+  renameShort:{tr:"✏️ Ad",en:"✏️ Name",ru:"✏️ Имя",zh:"✏️ 名称",es:"✏️ Nombre",de:"✏️ Name",fr:"✏️ Nom"},
+  usage:{tr:"Kullanım: Bir grubun Kopyala & Aç tuşuna bas → ilan panoya kopyalanır, grup sayfası tarayıcıda açılır → ilan kutusuna Ctrl+V, Enter. Her grubun kendi ilan kuralına (süre/başlık) uy.",en:"Usage: Click a group's Copy & Open → the ad is copied and the group page opens in your browser → paste with Ctrl+V, Enter in the post box. Follow each group's own posting rules (interval/title).",ru:"Использование: Нажми «Копир. и открыть» у группы → объявление скопируется, страница откроется в браузере → вставь Ctrl+V, Enter. Соблюдай правила каждой группы (интервал/заголовок).",zh:"用法：点击群组的「复制并打开」→ 广告被复制，群组页面在浏览器打开 → 在发布框中 Ctrl+V、Enter。请遵守各群组的发布规则（间隔/标题）。",es:"Uso: Pulsa Copiar y abrir de un grupo → el anuncio se copia y la página se abre en el navegador → pega con Ctrl+V, Enter. Respeta las reglas de cada grupo (intervalo/título).",de:"Nutzung: Klicke bei einer Gruppe auf Kopieren & Öffnen → die Anzeige wird kopiert und die Seite öffnet sich im Browser → mit Strg+V, Enter einfügen. Beachte die Regeln jeder Gruppe (Intervall/Titel).",fr:"Usage : Clique sur Copier & Ouvrir d'un groupe → l'annonce est copiée et la page s'ouvre dans le navigateur → colle avec Ctrl+V, Entrée. Respecte les règles de chaque groupe (intervalle/titre)."},
+  emptyGroups:{tr:"Henüz grup yok. Yukarıdan profilini yazıp Grupları Çek de.",en:"No groups yet. Enter your profile above and click Fetch Groups.",ru:"Групп пока нет. Введи профиль выше и нажми «Загрузить группы».",zh:"还没有群组。在上方输入你的个人资料并点击获取群组。",es:"Aún no hay grupos. Escribe tu perfil arriba y pulsa Obtener grupos.",de:"Noch keine Gruppen. Gib oben dein Profil ein und klicke auf Gruppen laden.",fr:"Aucun groupe. Saisis ton profil ci-dessus et clique sur Récupérer les groupes."},
+  copied:{tr:"Panoya kopyalandı ✓",en:"Copied ✓",ru:"Скопировано ✓",zh:"已复制 ✓",es:"Copiado ✓",de:"Kopiert ✓",fr:"Copié ✓"},
+  saved:{tr:"Şablon kaydedildi",en:"Template saved",ru:"Шаблон сохранён",zh:"模板已保存",es:"Plantilla guardada",de:"Vorlage gespeichert",fr:"Modèle enregistré"},
+  fetching:{tr:"Çekiliyor...",en:"Fetching...",ru:"Загрузка...",zh:"获取中...",es:"Obteniendo...",de:"Wird geladen...",fr:"Chargement..."},
+  needProfile:{tr:"Önce profilini yaz",en:"Enter your profile first",ru:"Сначала введи профиль",zh:"请先输入个人资料",es:"Escribe tu perfil primero",de:"Zuerst Profil eingeben",fr:"Saisis d'abord ton profil"},
+  groupsAdded:{tr:"{n} grup eklendi ✓ (toplam {t} bulundu)",en:"{n} groups added ✓ ({t} found)",ru:"Добавлено: {n} ✓ (найдено {t})",zh:"已添加 {n} 个 ✓（共 {t} 个）",es:"{n} grupos añadidos ✓ ({t} encontrados)",de:"{n} Gruppen hinzugefügt ✓ ({t} gefunden)",fr:"{n} groupes ajoutés ✓ ({t} trouvés)"},
+  noNew:{tr:"Yeni grup yok, hepsi zaten ekliydi",en:"No new groups, all already added",ru:"Новых групп нет",zh:"没有新群组",es:"No hay grupos nuevos",de:"Keine neuen Gruppen",fr:"Aucun nouveau groupe"},
+  noneFound:{tr:"Grup bulunamadı — profil gizli olabilir ya da hiç grup yok",en:"No groups found — profile may be private or has none",ru:"Группы не найдены — профиль скрыт или их нет",zh:"未找到群组——资料可能不公开或没有群组",es:"No se encontraron grupos — perfil privado o sin grupos",de:"Keine Gruppen gefunden — Profil evtl. privat oder keine",fr:"Aucun groupe trouvé — profil privé ou aucun"},
+  errPfx:{tr:"Hata: ",en:"Error: ",ru:"Ошибка: ",zh:"错误：",es:"Error: ",de:"Fehler: ",fr:"Erreur : "},
+  needNameUrl:{tr:"Ad ve link gerekli",en:"Name and link required",ru:"Нужны название и ссылка",zh:"需要名称和链接",es:"Se requiere nombre y enlace",de:"Name und Link erforderlich",fr:"Nom et lien requis"},
+  atLeastOne:{tr:"En az bir şablon kalmalı",en:"At least one template must remain",ru:"Должен остаться хотя бы один шаблон",zh:"至少保留一个模板",es:"Debe quedar al menos una plantilla",de:"Mindestens eine Vorlage muss bleiben",fr:"Au moins un modèle doit rester"},
+  promptGroup:{tr:"Grup adı:",en:"Group name:",ru:"Название группы:",zh:"群组名称：",es:"Nombre del grupo:",de:"Gruppenname:",fr:"Nom du groupe :"},
+  promptProfile:{tr:"Profil adı:",en:"Profile name:",ru:"Имя профиля:",zh:"配置文件名称：",es:"Nombre del perfil:",de:"Profilname:",fr:"Nom du profil :"},
+  confirmReset:{tr:"Bu profildeki tüm gruplar ve profil bilgisi silinsin mi? (İlan şablonların kalır.)",en:"Delete all groups and profile input here? (Your ad templates stay.)",ru:"Удалить все группы и данные этого профиля? (Шаблоны останутся.)",zh:"删除此配置文件的所有群组和输入吗？（广告模板保留。）",es:"¿Eliminar todos los grupos y datos de este perfil? (Las plantillas permanecen.)",de:"Alle Gruppen und Profildaten hier löschen? (Vorlagen bleiben.)",fr:"Supprimer tous les groupes et données de ce profil ? (Les modèles restent.)"},
+  confirmDelProfile:{tr:"Bu profil tamamen silinsin mi?",en:"Delete this profile completely?",ru:"Удалить этот профиль полностью?",zh:"彻底删除此配置文件吗？",es:"¿Eliminar este perfil por completo?",de:"Dieses Profil vollständig löschen?",fr:"Supprimer complètement ce profil ?"},
+  resetDone:{tr:"Sayfa sıfırlandı",en:"Page reset",ru:"Страница сброшена",zh:"页面已重置",es:"Página restablecida",de:"Seite zurückgesetzt",fr:"Page réinitialisée"},
+  groupsCount:{tr:"{n} grup",en:"{n} groups",ru:"групп: {n}",zh:"{n} 个群组",es:"{n} grupos",de:"{n} Gruppen",fr:"{n} groupes"},
+  ok:{tr:"Tamam",en:"OK",ru:"ОК",zh:"确定",es:"Aceptar",de:"OK",fr:"OK"},
+  cancel:{tr:"İptal",en:"Cancel",ru:"Отмена",zh:"取消",es:"Cancelar",de:"Abbrechen",fr:"Annuler"},
+  tplDefaultName:{tr:"İlan",en:"Ad",ru:"Объявление",zh:"广告",es:"Anuncio",de:"Anzeige",fr:"Annonce"},
+  favTitle:{tr:"⭐ Favori Gruplar",en:"⭐ Favorite Groups",ru:"⭐ Избранные группы",zh:"⭐ 收藏的群组",es:"⭐ Grupos favoritos",de:"⭐ Favoriten",fr:"⭐ Groupes favoris"},
+  favEmpty:{tr:"Yıldızladığın gruplar burada görünür.",en:"Groups you star appear here.",ru:"Отмеченные звёздой группы появятся здесь.",zh:"你收藏的群组会显示在这里。",es:"Los grupos marcados aparecen aquí.",de:"Markierte Gruppen erscheinen hier.",fr:"Les groupes marqués apparaissent ici."},
+  deleteProfileBtn:{tr:"🗑 Profil Sil",en:"🗑 Delete Profile",ru:"🗑 Удалить профиль",zh:"🗑 删除配置文件",es:"🗑 Eliminar perfil",de:"🗑 Profil löschen",fr:"🗑 Supprimer un profil"},
+  deleteSelected:{tr:"Seçilenleri Sil ({n})",en:"Delete Selected ({n})",ru:"Удалить выбранные ({n})",zh:"删除所选 ({n})",es:"Eliminar seleccionados ({n})",de:"Auswahl löschen ({n})",fr:"Supprimer la sélection ({n})"},
+  renameHint:{tr:"Adı değiştirmek için tıkla",en:"Click to rename",ru:"Нажми, чтобы переименовать",zh:"点击重命名",es:"Clic para renombrar",de:"Zum Umbenennen klicken",fr:"Cliquer pour renommer"},
+  confirmDelSelected:{tr:"Seçili profil(ler) silinsin mi?",en:"Delete the selected profile(s)?",ru:"Удалить выбранные профили?",zh:"删除所选配置文件吗？",es:"¿Eliminar los perfiles seleccionados?",de:"Ausgewählte Profile löschen?",fr:"Supprimer les profils sélectionnés ?"},
+  clickToOpen:{tr:"Açmak için kutuya tıkla",en:"Click the card to open",ru:"Нажми на карточку, чтобы открыть",zh:"点击卡片打开",es:"Haz clic en la tarjeta para abrir",de:"Zum Öffnen auf die Karte klicken",fr:"Clique sur la carte pour ouvrir"},
+  profilesMenu:{tr:"Profiller",en:"Profiles",ru:"Профили",zh:"配置文件",es:"Perfiles",de:"Profile",fr:"Profils"},
+  allProfiles:{tr:"◀ Tüm Profiller",en:"◀ All Profiles",ru:"◀ Все профили",zh:"◀ 全部配置文件",es:"◀ Todos los perfiles",de:"◀ Alle Profile",fr:"◀ Tous les profils"},
+  lastActivity:{tr:"Son paylaşım",en:"Last activity",ru:"Последняя активность",zh:"最近活动",es:"Última actividad",de:"Letzte Aktivität",fr:"Dernière activité"},
+  checkPost:{tr:"Steam'den son yorumunu kontrol et",en:"Check your last comment from Steam",ru:"Проверить последний комментарий в Steam",zh:"从 Steam 检查你的最新评论",es:"Comprobar tu último comentario en Steam",de:"Deinen letzten Kommentar bei Steam prüfen",fr:"Vérifier ton dernier commentaire sur Steam"},
+  checking:{tr:"Kontrol ediliyor...",en:"Checking...",ru:"Проверка...",zh:"检查中...",es:"Comprobando...",de:"Wird geprüft...",fr:"Vérification..."},
+  postFound:{tr:"Son paylaşım bulundu ✓",en:"Last post found ✓",ru:"Последняя запись найдена ✓",zh:"已找到最近发布 ✓",es:"Última publicación encontrada ✓",de:"Letzter Beitrag gefunden ✓",fr:"Dernière publication trouvée ✓"},
+  noPostFound:{tr:"Senin son yorumun bulunamadı (çok eski olabilir ya da grup çok aktif)",en:"Your last comment wasn't found (may be too old or the group is very active)",ru:"Твой комментарий не найден (слишком старый или группа очень активна)",zh:"未找到你的评论（可能太旧或群组太活跃）",es:"No se encontró tu comentario (puede ser muy antiguo o el grupo muy activo)",de:"Dein Kommentar wurde nicht gefunden (evtl. zu alt oder Gruppe sehr aktiv)",fr:"Ton commentaire est introuvable (trop ancien ou groupe très actif)"},
+  needAccount:{tr:"Önce 'Grupları Çek' ile profilini bağla (hesap kimliği gerekli)",en:"First connect your profile via 'Fetch Groups' (account id needed)",ru:"Сначала подключи профиль через «Загрузить группы»",zh:"请先通过“获取群组”连接你的资料",es:"Primero conecta tu perfil con 'Obtener grupos'",de:"Verbinde zuerst dein Profil über 'Gruppen laden'",fr:"Connecte d'abord ton profil via 'Récupérer les groupes'"},
+  openAll:{tr:"🗗 Tüm sayfaları aç",en:"🗗 Open all pages",ru:"🗗 Открыть все",zh:"🗗 打开所有页面",es:"🗗 Abrir todas",de:"🗗 Alle öffnen",fr:"🗗 Tout ouvrir"},
+  confirmOpenAll:{tr:"{n} grup sayfası ayrı sekmelerde açılsın mı? Göndermeyi (Enter) yine her sekmede sen yaparsın.",en:"Open {n} group pages in separate tabs? You still submit (Enter) in each tab yourself.",ru:"Открыть {n} страниц групп в отдельных вкладках? Отправляешь (Enter) в каждой сам.",zh:"在单独标签页中打开 {n} 个群组页面吗？每个标签仍需你自己按 Enter 发送。",es:"¿Abrir {n} páginas de grupos en pestañas separadas? Tú envías (Enter) en cada una.",de:"{n} Gruppenseiten in separaten Tabs öffnen? Das Absenden (Enter) machst du in jedem Tab selbst.",fr:"Ouvrir {n} pages de groupes dans des onglets séparés ? Tu valides (Entrée) toi-même dans chacun."},
+  openingAll:{tr:"{n} sayfa açılıyor...",en:"Opening {n} pages...",ru:"Открывается {n} страниц...",zh:"正在打开 {n} 个页面...",es:"Abriendo {n} páginas...",de:"{n} Seiten werden geöffnet...",fr:"Ouverture de {n} pages..."}
+};
+function fmtLast(ts){ const d=new Date(ts); const p=n=>String(n).padStart(2,'0');
+  return p(d.getDate())+'.'+p(d.getMonth()+1)+'. '+p(d.getHours())+':'+p(d.getMinutes()); }
+
+const DEFAULT_TPL =
+`Trading my playskin for a knife. New to trade. Send fair trade offers.  Fast reply
+
+🎮 Glock-18 | Nuclear Garden FN - Mid Pattern 56$
+
+https://steamcommunity.com/tradeoffer/new/?partner=1453538724&token=AOmvaWxW`;
+
+/* ---------------- durum ---------------- */
+const LS='tp_state_v2';
+let state={lang:'tr',profiles:[]};
+let activeId=null; // oturum bazli, kapatinca profil ekranindan baslar
+let pendingCheck=null; // az once acilan grup (odak gelince gercek paylasim kontrolu)
+
+function uid(){return Math.random().toString(36).slice(2,9)}
+function t(key,vars){
+  let s=(I18N[key]&&(I18N[key][state.lang]||I18N[key].tr))||key;
+  if(vars)for(const k in vars)s=s.replace('{'+k+'}',vars[k]);
+  return s;
+}
+function persist(){ localStorage.setItem(LS,JSON.stringify(state)); }
+
+/* Electron prompt() desteklemiyor -> kendi giris penceremiz */
+function promptModal(msg,def){
+  return new Promise(res=>{
+    const ov=document.getElementById('modal');
+    document.getElementById('modalMsg').textContent=msg;
+    const inp=document.getElementById('modalInput'); inp.value=def||'';
+    const okB=document.getElementById('modalOk'), caB=document.getElementById('modalCancel');
+    okB.textContent=t('ok'); caB.textContent=t('cancel');
+    ov.style.display='flex'; setTimeout(()=>{inp.focus();inp.select();},30);
+    function done(v){ ov.style.display='none'; okB.onclick=null;caB.onclick=null;inp.onkeydown=null; res(v); }
+    okB.onclick=()=>done(inp.value);
+    caB.onclick=()=>done(null);
+    inp.onkeydown=e=>{ if(e.key==='Enter')done(inp.value); else if(e.key==='Escape')done(null); };
+  });
+}
+
+function migrateOld(){
+  // eski tek-profilli surumden tasima
+  const oldT=localStorage.getItem('tp_templates');
+  const oldG=localStorage.getItem('tp_groups');
+  if(!oldT && !oldG) return;
+  let templates=[]; try{templates=JSON.parse(oldT||'[]')}catch(e){}
+  let groups=[]; try{groups=JSON.parse(oldG||'[]')}catch(e){}
+  if(!templates.length) templates=[{id:uid(),name:'Glock Nuclear Garden',body:DEFAULT_TPL}];
+  state.profiles.push({
+    id:uid(), name:t('profileDefault')+' 1',
+    steamInput:localStorage.getItem('tp_profile')||'',
+    templates, activeTplId:localStorage.getItem('tp_active')||templates[0].id,
+    groups
+  });
+  ['tp_templates','tp_groups','tp_profile','tp_active'].forEach(k=>localStorage.removeItem(k));
+  persist();
+}
+
+function load(){
+  const raw=localStorage.getItem(LS);
+  if(raw){ try{state=JSON.parse(raw)}catch(e){} }
+  if(!state.lang) state.lang='tr';
+  if(!Array.isArray(state.profiles)) state.profiles=[];
+  if(!state.profiles.length) migrateOld();
+  document.getElementById('langSel').value=state.lang;
+}
+function ap(){ return state.profiles.find(p=>p.id===activeId)||null; }
+
+/* ---------------- dil ---------------- */
+function applyI18n(){
+  document.documentElement.lang=state.lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent=t(el.getAttribute('data-i18n'));
+  });
+  document.getElementById('profInput').placeholder='76561199413804452  •  Sinhon  •  https://steamcommunity.com/id/Sinhon';
+}
+function setLang(l){ state.lang=l; persist(); render(); }
+
+/* ---------------- profil ekrani ---------------- */
+function render(){
+  applyI18n();
+  const inApp=!!ap();
+  document.getElementById('appView').style.display=inApp?'block':'none';
+  document.getElementById('profileView').style.display=inApp?'none':'block';
+  document.getElementById('btnReset').style.display=inApp?'inline-flex':'none';
+  const chip=document.getElementById('profChip');
+  if(inApp){ chip.style.display='inline-block'; chip.innerHTML='<b>'+esc(ap().name)+'</b>'; }
+  else chip.style.display='none';
+  if(inApp){ renderApp(); startAuto(); } else { renderProfiles(); stopAuto(); }
+}
+let delMode=false; const delSel=new Set();
+function renderProfiles(){
+  const box=document.getElementById('profileList'); box.innerHTML='';
+  if(!state.profiles.length){ box.innerHTML='<div class="empty">'+esc(t('noProfiles'))+'</div>'; renderProfileActions(); return; }
+  state.profiles.forEach(p=>{
+    const meta=esc(p.steamInput||'—')+' · '+esc(t('groupsCount',{n:(p.groups||[]).length}));
+    const el=document.createElement('div'); el.dataset.id=p.id;
+    el.className='prow'+(delMode&&delSel.has(p.id)?' sel':'');
+    if(delMode){
+      el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <span class="pcheck">${delSel.has(p.id)?'✓':''}</span>
+          <div class="pinfo"><div class="pname">${esc(p.name)}</div><div class="pmeta">${meta}</div></div>
+        </div>`;
+    }else{
+      el.title=t('clickToOpen');
+      el.innerHTML=`<div class="pinfo">
+          <div class="pname editable" data-a="rename" title="${esc(t('renameHint'))}">${esc(p.name)}</div>
+          <div class="pmeta">${meta}</div>
+        </div>`;
+    }
+    box.appendChild(el);
+  });
+  renderProfileActions();
+}
+function renderProfileActions(){
+  const box=document.getElementById('profileActions'); box.innerHTML='';
+  if(delMode){
+    const n=delSel.size;
+    box.innerHTML=`<button class="btn danger" id="paDel" ${n?'':'disabled'}>${esc(t('deleteSelected',{n}))}</button>
+      <button class="btn ghost" id="paCancel">${esc(t('cancel'))}</button>`;
+    box.querySelector('#paDel').onclick=deleteSelected;
+    box.querySelector('#paCancel').onclick=cancelDelMode;
+  }else{
+    box.innerHTML=`<button class="btn green" id="paNew">${esc(t('newProfile'))}</button>`+
+      (state.profiles.length?`<button class="btn danger" id="paDelMode">${esc(t('deleteProfileBtn'))}</button>`:'');
+    box.querySelector('#paNew').onclick=createProfile;
+    const dm=box.querySelector('#paDelMode'); if(dm) dm.onclick=enterDelMode;
+  }
+}
+function enterDelMode(){ delMode=true; delSel.clear(); renderProfiles(); }
+function cancelDelMode(){ delMode=false; delSel.clear(); renderProfiles(); }
+function deleteSelected(){
+  if(!delSel.size) return;
+  if(!confirm(t('confirmDelSelected'))) return;
+  state.profiles=state.profiles.filter(p=>!delSel.has(p.id));
+  if(delSel.has(activeId)) activeId=null;
+  delMode=false; delSel.clear(); persist(); render();
+}
+document.getElementById('profileList').addEventListener('click',async e=>{
+  const row=e.target.closest('.prow'); if(!row)return;
+  const id=row.dataset.id; const p=state.profiles.find(x=>x.id===id); if(!p)return;
+  if(delMode){ delSel.has(id)?delSel.delete(id):delSel.add(id); renderProfiles(); return; }
+  if(e.target.closest('[data-a="rename"]')){
+    const n=await promptModal(t('promptProfile'),p.name); if(n!==null){p.name=n.trim()||p.name;persist();renderProfiles();}
+    return;
+  }
+  activeId=id; render();
+});
+function createProfile(){
+  const n=state.profiles.length+1;
+  const tpl={id:uid(),name:t('tplDefaultName')+' 1',body:''};
+  const p={id:uid(),name:t('profileDefault')+' '+n,steamInput:'',templates:[tpl],activeTplId:tpl.id,groups:[]};
+  state.profiles.push(p); persist(); activeId=p.id; delMode=false; delSel.clear(); render();
+}
+function goProfiles(){ activeId=null; delMode=false; delSel.clear(); render(); }
+function resetPage(){
+  const p=ap(); if(!p)return;
+  if(!confirm(t('confirmReset')))return;
+  p.groups=[]; p.steamInput=''; persist(); renderApp(); toast(t('resetDone'));
+}
+
+/* ---------------- ana uygulama ---------------- */
+function renderApp(){
+  const p=ap(); if(!p)return;
+  document.getElementById('profInput').value=p.steamInput||'';
+  renderTpls(); renderGroups();
+}
+function renderTpls(){
+  const p=ap(); if(!p)return;
+  const sel=document.getElementById('tplSelect'); sel.innerHTML='';
+  p.templates.forEach(tp=>{
+    const o=document.createElement('option');o.value=tp.id;o.textContent=tp.name||'(?)';
+    if(tp.id===p.activeTplId)o.selected=true;sel.appendChild(o);
+  });
+  const tp=p.templates.find(x=>x.id===p.activeTplId);
+  document.getElementById('tplName').value=tp?tp.name:'';
+  document.getElementById('tplBody').value=tp?tp.body:'';
+}
+document.getElementById('tplSelect').addEventListener('change',e=>{const p=ap();if(!p)return;p.activeTplId=e.target.value;persist();renderTpls();});
+document.getElementById('profInput').addEventListener('input',e=>{const p=ap();if(p){p.steamInput=e.target.value;persist();}});
+function newTpl(){const p=ap();if(!p)return;const tp={id:uid(),name:t('tplDefaultName')+' '+(p.templates.length+1),body:''};p.templates.push(tp);p.activeTplId=tp.id;persist();renderTpls();}
+function saveTpl(){const p=ap();if(!p)return;const tp=p.templates.find(x=>x.id===p.activeTplId);if(!tp)return;
+  tp.name=document.getElementById('tplName').value.trim()||'(?)';tp.body=document.getElementById('tplBody').value;persist();renderTpls();toast(t('saved'));}
+function delTpl(){const p=ap();if(!p)return;if(p.templates.length<=1){toast(t('atLeastOne'),true);return;}
+  p.templates=p.templates.filter(x=>x.id!==p.activeTplId);p.activeTplId=p.templates[0].id;persist();renderTpls();}
+function copyActive(){ doCopy(document.getElementById('tplBody').value); }
+
+function renderGroups(){
+  const p=ap(); if(!p)return;
+  const box=document.getElementById('groupList');box.innerHTML='';
+  if(!p.groups.length){box.innerHTML='<div class="empty">'+esc(t('emptyGroups'))+'</div>';renderFavs();return;}
+  const recentId=mostRecentGroupId(p);
+  const list=[...p.groups].sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)); // favoriler uste
+  list.forEach((g,i)=>{
+    const el=document.createElement('div');el.className='item'+(g.id===recentId?' recent':'');
+    el.innerHTML=`<div class="top">
+        <div style="min-width:0;display:flex;align-items:center;gap:6px">
+          <button class="star ${g.fav?'on':''}" data-a="fav" data-id="${g.id}">${g.fav?'★':'☆'}</button>
+          <div style="min-width:0"><div class="name">${esc(g.name)}</div><div class="url">${esc(g.url)}</div>
+            ${g.lastPost?`<div class="url" style="color:#6fbf73;margin-top:3px">🕒 ${esc(t('lastActivity'))}: ${fmtLast(g.lastPost)}</div>`:''}
+          </div>
+        </div>
+        <span class="pill">#${i+1}</span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" data-a="copyopen" data-id="${g.id}">${esc(t('copyOpen'))}</button>
+        <button class="btn ghost sm" data-a="open" data-id="${g.id}">${esc(t('openOnly'))}</button>
+        <button class="btn ghost sm" data-a="check" data-id="${g.id}" title="${esc(t('checkPost'))}">🔄</button>
+        <button class="btn ghost sm" data-a="rename" data-id="${g.id}">${esc(t('renameShort'))}</button>
+        <button class="btn danger sm" data-a="del" data-id="${g.id}">${esc(t('deleteBtn'))}</button>
+      </div>`;
+    box.appendChild(el);
+  });
+  renderFavs();
+}
+function renderFavs(){
+  const p=ap(); if(!p)return;
+  const box=document.getElementById('favList'); if(!box)return; box.innerHTML='';
+  const favs=(p.groups||[]).filter(g=>g.fav);
+  if(!favs.length){ box.innerHTML='<div class="empty">'+esc(t('favEmpty'))+'</div>'; return; }
+  const recentId=mostRecentGroupId(p);
+  favs.forEach(g=>{
+    const el=document.createElement('div');el.className='item'+(g.id===recentId?' recent':'');
+    el.innerHTML=`<div class="name">⭐ ${esc(g.name)}</div>
+      ${g.lastPost?`<div class="url" style="color:#6fbf73;margin-top:3px">🕒 ${esc(t('lastActivity'))}: ${fmtLast(g.lastPost)}</div>`:''}
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" data-a="copyopen" data-id="${g.id}">${esc(t('copyOpen'))}</button>
+        <button class="btn ghost sm" data-a="open" data-id="${g.id}">${esc(t('openOnly'))}</button>
+        <button class="star on" data-a="fav" data-id="${g.id}">★</button>
+      </div>`;
+    box.appendChild(el);
+  });
+}
+function groupAction(a,id){
+  const p=ap(); if(!p)return;
+  const g=p.groups.find(x=>x.id===id); if(!g)return;
+  if(a==='copyopen'){ const ad=document.getElementById('tplBody').value; doCopy(ad); ensureAccountId(p);
+    pendingCheck={id:g.id,at:Date.now(),tries:0}; openGroupForPost(g,ad); }
+  else if(a==='open'){ ensureAccountId(p); pendingCheck={id:g.id,at:Date.now(),tries:0}; openGroupForPost(g,document.getElementById('tplBody').value); }
+  else if(a==='fav'){ g.fav=!g.fav; persist(); renderGroups(); }
+  else if(a==='check'){ manualCheck(g); }
+  else if(a==='del'){ p.groups=p.groups.filter(x=>x.id!==g.id);persist();renderGroups(); }
+  return g;
+}
+// Grubu dogrudan Yorumlar sayfasinda ac; ilan metnini #tradead= ile gomer (Tampermonkey doldurur)
+function commentsUrl(u){ return (u||'').replace(/\/+$/,'')+'/comments'; }
+function openGroupForPost(g,ad){
+  let url=commentsUrl(g.url);
+  if(ad) url+='#tradead='+encodeURIComponent(ad);
+  openUrl(url);
+}
+// Tum gruplarin yorum sayfalarini ayri sekmelerde ac (gonderme yine kullanicida)
+function openAllGroups(){
+  const p=ap(); if(!p||!p.groups.length) return;
+  if(!confirm(t('confirmOpenAll',{n:p.groups.length}))) return;
+  const ad=document.getElementById('tplBody').value;
+  doCopy(ad); ensureAccountId(p);
+  toast(t('openingAll',{n:p.groups.length}));
+  p.groups.forEach((g,i)=>{
+    setTimeout(()=>{ let url=commentsUrl(g.url); if(ad) url+='#tradead='+encodeURIComponent(ad); openUrl(url); }, i*350);
+  });
+}
+
+/* ---- gercek paylasim tespiti (Steam yorumlarindan) ---- */
+const STEAM_BASE=76561197960265728n;
+function accountFromId64(id64){ try{ return (BigInt(id64)-STEAM_BASE).toString(); }catch(e){ return null; } }
+function ensureAccountId(p){
+  if(p.accountId) return;
+  const v=p.steamInput||'';
+  let m=v.match(/\/profiles\/(\d{17})/) || v.match(/^(\d{17})$/);
+  if(m){ p.steamid64=m[1]; p.accountId=accountFromId64(m[1]); persist(); }
+}
+// Grubun /comments sayfasindan senin en yeni yorumunun zamanini bul
+async function verifyPost(g, sinceMs){
+  const p=ap(); if(!p||!p.accountId||!window.api||!window.api.fetchPage) return false;
+  const r=await window.api.fetchPage(commentsUrl(g.url));
+  if(!r||!r.ok) return false;
+  const re=/data-miniprofile="(\d+)"[\s\S]*?data-timestamp="(\d+)"/g;
+  let m,best=0;
+  while((m=re.exec(r.html))){ if(m[1]===p.accountId){ const ts=(+m[2])*1000; if(ts>best) best=ts; } }
+  if(best && (!sinceMs || best>=sinceMs-5*60000)){
+    if(g.lastPost!==best){ g.lastPost=best; g.lastPostReal=true; persist(); renderGroups(); }
+    return true;
+  }
+  return false;
+}
+async function manualCheck(g){
+  const p=ap(); if(!p) return;
+  ensureAccountId(p);
+  if(!p.accountId){ toast(t('needAccount'),true); return; }
+  toast(t('checking'));
+  const ok=await verifyPost(g,0);
+  toast(ok?t('postFound'):t('noPostFound'), !ok);
+}
+// Kullanici uygulamaya geri dondugunde (odak), az once actigi grubu kontrol et
+let verifyingNow=false;
+async function maybeVerify(){
+  if(verifyingNow||!pendingCheck) return;
+  const p=ap(); if(!p){ return; }
+  const g=p.groups.find(x=>x.id===pendingCheck.id);
+  if(!g){ pendingCheck=null; return; }
+  if(Date.now()-pendingCheck.at>30*60000){ pendingCheck=null; return; }
+  verifyingNow=true;
+  pendingCheck.tries=(pendingCheck.tries||0)+1;
+  const ok=await verifyPost(g, pendingCheck.at);
+  verifyingNow=false;
+  if(ok||pendingCheck.tries>=6) pendingCheck=null;
+}
+window.addEventListener('focus', maybeVerify);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) maybeVerify(); });
+
+/* ---- otomatik guncelleme: her ~8sn'de bir grubu sirayla kontrol et (sadece pencere gorunurken) ---- */
+let autoTimer=null, autoIdx=0, autoBusy=false;
+function startAuto(){
+  if(autoTimer) return;
+  autoIdx=0;
+  autoTimer=setInterval(autoTick, 8000);
+  setTimeout(autoTick, 1500); // acilinca kisa sure sonra basla
+}
+function stopAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } }
+async function autoTick(){
+  if(autoBusy || document.hidden) return;
+  const p=ap(); if(!p||!p.groups.length) return;
+  ensureAccountId(p);
+  if(!p.accountId) return;
+  autoBusy=true;
+  const g=p.groups[autoIdx % p.groups.length];
+  autoIdx++;
+  try{ await verifyPost(g, 0); }catch(e){}
+  autoBusy=false;
+}
+// en son paylasim yapilan grubun id'si (vurgulamak icin)
+function mostRecentGroupId(p){ let ts=0,id=null; (p&&p.groups||[]).forEach(g=>{ if(g.lastPost&&g.lastPost>ts){ts=g.lastPost;id=g.id;} }); return id; }
+document.getElementById('groupList').addEventListener('click',async e=>{
+  const b=e.target.closest('button[data-a]'); if(!b)return;
+  if(b.dataset.a==='rename'){
+    const p=ap(); if(!p)return; const g=p.groups.find(x=>x.id===b.dataset.id); if(!g)return;
+    const n=await promptModal(t('promptGroup'),g.name); if(n!==null){g.name=n.trim()||g.name;persist();renderGroups();}
+    return;
+  }
+  groupAction(b.dataset.a,b.dataset.id);
+});
+document.getElementById('favList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]'); if(!b)return;
+  groupAction(b.dataset.a,b.dataset.id);
+});
+function addGroup(){
+  const p=ap(); if(!p)return;
+  const name=document.getElementById('grpName').value.trim();
+  const url=document.getElementById('grpUrl').value.trim();
+  if(!name||!url){toast(t('needNameUrl'),true);return;}
+  p.groups.push({id:uid(),name,url});persist();renderGroups();
+  document.getElementById('grpName').value='';document.getElementById('grpUrl').value='';
+}
+
+function normUrl(u){return (u||'').replace(/\/+$/,'').toLowerCase();}
+function parseGroupsFromHtml(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const map=new Map();
+  doc.querySelectorAll('a[href]').forEach(a=>{
+    const href=a.getAttribute('href')||'';
+    const m=href.match(/steamcommunity\.com\/(groups|gid)\/([^\/\?#"'\s]+)/i);
+    if(!m)return;
+    const slug=m[2];
+    if(/^(home|discussions|members|events|comments|about|search)$/i.test(slug))return;
+    const url='https://steamcommunity.com/'+m[1]+'/'+slug;
+    const name=(a.textContent||'').trim().replace(/\s+/g,' ');
+    const key=normUrl(url); const cur=map.get(key);
+    if(!cur || (name && !cur.name)) map.set(key,{name,url});
+  });
+  return [...map.values()];
+}
+async function fetchGroups(){
+  const p=ap(); if(!p)return;
+  const btn=document.getElementById('fetchBtn');
+  const input=document.getElementById('profInput').value.trim();
+  if(!input){toast(t('needProfile'),true);return;}
+  p.steamInput=input; persist();
+  btn.disabled=true; const old=btn.textContent; btn.innerHTML='<span class="spin"></span> '+esc(t('fetching'));
+  try{
+    const r=await window.api.fetchGroups(input);
+    if(!r.ok){toast(t('errPfx')+(r.error||'?'),true);return;}
+    if(r.steamid64){ p.steamid64=r.steamid64; p.accountId=accountFromId64(r.steamid64); }
+    const found=parseGroupsFromHtml(r.html);
+    if(!found.length){toast(t('noneFound'),true);return;}
+    const existing=new Set(p.groups.map(g=>normUrl(g.url)));
+    let added=0;
+    found.forEach(f=>{const key=normUrl(f.url);if(existing.has(key))return;
+      p.groups.push({id:uid(),name:f.name||('Group '+(p.groups.length+1)),url:f.url});existing.add(key);added++;});
+    persist();renderGroups();
+    toast(added?t('groupsAdded',{n:added,t:found.length}):t('noNew'));
+  }catch(e){ toast(t('errPfx')+(e.message||e),true); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+
+function openUrl(u){ if(window.api) window.api.openExternal(u); else window.open(u,'_blank'); }
+function doCopy(text){
+  if(window.api){ window.api.copy(text); toast(t('copied')); return; }
+  navigator.clipboard.writeText(text).then(()=>toast(t('copied'))).catch(()=>toast('x',true));
+}
+let tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;
+  el.classList.toggle('err',!!err);el.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),err?2600:1600);}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+load(); render();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "trade-ilan-yardimcisi",
+  "version": "1.0.0",
+  "description": "Steam trade ilanlarini gruplara elle yapistirmayi hizlandiran masaustu yardimcisi",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "powershell -ExecutionPolicy Bypass -File build.ps1",
+    "share": "powershell -ExecutionPolicy Bypass -File make-share.ps1"
+  },
+  "author": "Sinhon",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^20.2.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.sinhon.tradehelper",
+    "productName": "Trade Ilan Yardimcisi",
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "package.json"
+    ]
+  }
+}

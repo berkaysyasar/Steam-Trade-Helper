@@ -1,0 +1,32 @@
+TRADE AD HELPER - Kullanim
+==========================
+
+Kurulum YOK. Klasoru actiginda "Trade Ilan Yardimcisi.exe" dosyasina cift tikla,
+uygulama acilir.
+
+ILK ACILIS
+----------
+1) "New Profile" ile bir profil olustur ve ac.
+2) Sag ustteki kutuya kendi Steam profilini yaz (kullanici adin, SteamID64 ya da
+   tam profil linkin) ve "Fetch Groups" (Gruplari Cek) butonuna bas.
+   -> Takip ettigin gruplar otomatik listelenir. (Profilin herkese acik olmali.)
+3) Sol taraftaki "Ad Template" alanina ilanini yaz ve Save de.
+
+KULLANIM
+--------
+- Bir grubun "Copy & Open" butonuna bas: ilan panoya kopyalanir ve grubun
+  yorumlar sayfasi tarayicida acilir. Yorum kutusuna Ctrl+V yapistir, Enter'a bas.
+- Yildiz (☆) ile en cok kullandigin gruplari favorile; ustte gorunur.
+- Bir grupta paylasim yaptiktan sonra uygulamaya geri donunce, o gruba "Son
+  paylasim" tarihi otomatik islenir; en son paylastigin grup kirmizi ile isaretlenir.
+
+OTOMATIK YORUM DOLDURMA (istege bagli)
+--------------------------------------
+"Copy & Open" sonrasi yorum kutusuna metni otomatik yazdirmak istersen:
+1) Tarayicina Tampermonkey eklentisini kur.
+2) Bu klasordeki "tampermonkey-autofill.user.js" dosyasinin icerigini
+   Tampermonkey'de yeni script olarak yapistirip kaydet.
+Kurulmazsa sorun degil; metin zaten panoda olur, elle Ctrl+V yaparsin.
+
+NOT: Gruplara otomatik/toplu MESAJ GONDERME yoktur. Son adimi (Enter) hep sen
+yaparsin. Bu, Steam kurallarina uygun kalman ve hesabinin guvende olmasi icindir.
